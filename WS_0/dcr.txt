@@ -1,0 +1,9 @@
+<!DOCTYPE html> and <html lang="en">: These lines define the document type and language of the webpage. The language is set to English.
+
+
+An event listener is attached to the dark mode switch, so when it's toggled, it adds or removes the "dark-mode" class from the document's body to switch between light and dark mode.
+
+The fetchBitcoinData function fetches live Bitcoin data from an API (CoinGecko) and updates various elements on the page with this data. It repeats this process every 15 seconds using setInterval.
+
+The code sets up a Chart.js chart (line chart) to display Bitcoin price data. It fetches live price data from an API and updates the chart with this data every 3 seconds.
+Is and updated periodically to keep it current.

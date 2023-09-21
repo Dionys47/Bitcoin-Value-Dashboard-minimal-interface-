@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f6ebd6;
+            transition: background-color 0.5s ease;
+        }
+
+        .dark-mode body {
+            background-color: #1c1c1c;
+            color: #e1e1e1;
+        }
+
+        header {
+            background-color: #007385;
+            color: #e1e1e1;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .dark-mode .container {
+            background-color: #333;
+            color: #e1e1e1;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        .dark-mode-switch-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .dark-mode-switch-label {
+            cursor: pointer;
+            position: relative;
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 50%;
+            transition: background-color 0.5s ease;
+        }
+
+        .dark-mode-switch-checkbox {
+            display: none;
+        }
+
+        .dark-mode-switch-label::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 18px;
+            height: 18px;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.5s ease;
+        }
+
+        .dark-mode-switch-checkbox:checked + .dark-mode-switch-label::after {
+            transform: translate(-50%, -50%) translateX(20px);
+        }
+
+        .dark-mode-switch-checkbox:checked + .dark-mode-switch-label {
+            background-color: #000;
+        }
+
+        .coin-image {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .content {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bitcoin (BTC)</h1>
+    </header>
+    <div class="container">
+        <img src="Bitcoin.svg.png" alt="Bitcoin Logo" class="coin-image">
+        <div class="content">
+            <p>Bitcoin is a decentralized digital currency, without a bank or government backing it.
+                <br>It's the first and most well-known cryptocurrency, created by an anonymous
+                <br>person or group of people using the pseudonym Satoshi Nakamoto in 2009.</p>
+            <p>Bitcoin's current price: <span id="bitcoinPrice">$20,000</span></p>
+            <p>Market cap: <span id="marketCap">$900 billion</span></p>
+            <p>24-hour trading volume: <span id="volume">$50 billion</span></p>
+            <p>Bitcoin's all-time high: <span id="allTimeHigh">$64,000</span></p>
+        </div>
+    </div>
+    <div class="container">
+        <canvas id="bitcoinChart"></canvas>
+    </div>
+
+    <div class="dark-mode-switch-container">
+        <input type="checkbox" id="darkModeSwitch" class="dark-mode-switch-checkbox">
+        <label for="darkModeSwitch" class="dark-mode-switch-label"></label>
+    </div>
+    <div>
+
+        <p>&copy; 2023 BitcoinInfo.com</p>
+        <p>For more information about Bitcoin, visit <a href="https://bitcoin.org">bitcoin.org</a>.</p>
+    </div>
+    
+    <script>
+        const darkModeSwitch = document.getElementById('darkModeSwitch');
+        const body = document.body;
+
+        darkModeSwitch.addEventListener('change', () => {
+            if (darkModeSwitch.checked) {
+                body.classList.add('dark-mode');
+            } else {
+                body.classList.remove('dark-mode');
+            }
+        });
+
+        function fetchBitcoinData() {
+            fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true')
+                .then(response => response.json())
+                .then(data => {
+                    const bitcoinPriceElement = document.getElementById('bitcoinPrice');
+                    const marketCapElement = document.getElementById('marketCap');
+                    const volumeElement = document.getElementById('volume');
+
+                    bitcoinPriceElement.textContent = '$' + data.bitcoin.usd.toLocaleString();
+                    marketCapElement.textContent = '$' + data.bitcoin.usd_market_cap.toLocaleString();
+                    volumeElement.textContent = '$' + data.bitcoin.usd_24h_vol.toLocaleString();
+                })
+                .catch(error => console.error('Error fetching Bitcoin data:', error));
+        }
+
+        setInterval(fetchBitcoinData, 15000);
+
+        fetchBitcoinData();
+        const ctx = document.getElementById('bitcoinChart').getContext('2d');
+        const data = {
+            labels: [],
+            datasets: [{
+                label: 'Bitcoin Price (USD)',
+                data: [],
+                fill: false,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                tension: 0.1,
+            }]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom'
+                    },
+                    y: {
+                        beginAtZero: true,
+                    }
+                }
+            }
+        };
+
+        const bitcoinChart = new Chart(ctx, config);
+
+        function updateChart() {
+            fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=1')
+                .then(response => response.json())
+                .then(data => {
+                    const prices = data.prices.map(price => price[1]);
+                    const timestamps = data.prices.map(price => new Date(price[0]).toLocaleTimeString());
+
+                    bitcoinChart.data.labels = timestamps;
+                    bitcoinChart.data.datasets[0].data = prices;
+
+                    bitcoinChart.update();
+                })
+                .catch(error => console.error('Error fetching Bitcoin data:', error));
+        }
+
+        setInterval(updateChart, 3000);
+
+        updateChart();
+    </script>
+</body>
+</html>
